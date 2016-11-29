@@ -1,0 +1,7 @@
+node_modules
+tmp
+
+chronograf.db
+.vscode
+nsolid-storage*.gz
+npm-debug.log
