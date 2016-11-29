@@ -1,5 +1,5 @@
 {
-  "name": "becooler",
+  "name": "apimule",
   "version": "1.0.0",
   "description": "A simple web API framework.",
   "main": "index.js",
@@ -11,14 +11,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/nodesource/becooler.git"
+    "url": "git+ssh://git@github.com/nodesource/apimule.git"
   },
   "author": "Patrick Mueller <pmuellr@nodesource.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/nodesource/becooler/issues"
+    "url": "https://github.com/nodesource/apimule/issues"
   },
-  "homepage": "https://github.com/nodesource/becooler#readme",
+  "homepage": "https://github.com/nodesource/apimule#readme",
   "devDependencies": {
     "tap-spec": "^4.1.1",
     "tape": "^4.6.3"
