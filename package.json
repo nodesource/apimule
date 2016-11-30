@@ -1,31 +1,40 @@
 {
   "name": "apimule",
   "version": "1.0.0",
-  "description": "A simple web API framework.",
+  "description": "we accidentally wrote a web framework",
   "main": "index.js",
   "directories": {
     "test": "test"
   },
   "scripts": {
-    "test": "node test/index.js | tap-spec"
+    "test": "standard && node test/index.js | tap-spec",
+    "watch": "nodemon --exec 'npm test' --ext js,json"
   },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/nodesource/apimule.git"
   },
-  "author": "Patrick Mueller <pmuellr@nodesource.com>",
+  "author": "NodeSource <npm@nodesource.com> (https://nodesource.com)",
+  "contributors": [
+    "Erin Spiceland <erin@nodesource.com> (https://github.com/erinspice)",
+    "Patrick Mueller <pmuellr@nodesource.com> (https://github.com/pmuellr)",
+    "Dave Olszewski <daveo@nodesource.com> (https://github.com/cxreg)",
+    "Bryce Baril <bryce@nodesource.com> (https://github.com/brycebaril)"
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/nodesource/apimule/issues"
   },
   "homepage": "https://github.com/nodesource/apimule#readme",
   "devDependencies": {
-    "tap-spec": "^4.1.1",
-    "tape": "^4.6.3"
+    "nodemon": "~1.11.0",
+    "tap-spec": "~4.1.1",
+    "tape": "~4.6.3",
+    "standard": "~8.6.0"
   },
   "dependencies": {
-    "body-parser": "^1.15.2",
-    "express": "^4.14.0",
-    "lodash": "^4.17.2"
+    "body-parser": "~1.15.2",
+    "express": "~4.14.0",
+    "lodash": "~4.17.2"
   }
 }

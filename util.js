@@ -1,13 +1,6 @@
 'use strict'
 
 const fs = require('fs')
-const URL = require('url')
-const path = require('path')
-const crypto = require('crypto')
-
-const toml = require('toml')
-const lodash = require('lodash')
-const mkdirp = require('mkdirp')
 
 exports.cbNextTick = cbNextTick
 exports.onlyCallOnce = onlyCallOnce
