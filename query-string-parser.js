@@ -4,20 +4,13 @@ const lodash = require('lodash')
 
 exports.parse = parse
 
-const DefaultDurationSeconds = 5
-
 const Groups = {
-  agentScope: parseAgentScope,
-  duration: parseDuration,
-  nameData: parseNameData,
-  fields: parseFields,
-  interval: parseInterval,
-  startEnd: parseStartEnd,
-  agg: parseAgg
 }
 
-for (let key of ['id', 'app', 'key', 'val', 'name', 'data', 'asset', 'type', 'firstName', 'lastName', 'email', 'company', 'optOut', 'license']) {
-  Groups[key] = getSelfParser(key)
+exports.register = function (params) {
+  if (params.key && !Groups[params.key]) {
+    Groups[params.key] = params.validator || getSelfParser(params.key)
+  }
 }
 
 function getSelfParser (key) {
@@ -53,33 +46,6 @@ function parse (groups, query) {
     parseFn(query, data, required)
   }
 
-  // Perform semantic checks.
-
-  // Why did I think we needed this??? - pmuellr
-  // If no end time, and aggregated values => nope.
-  // if (data.end == null && data.agg && data.agg !== 'raw') {
-  //   data.errors.push('continous queries cannot aggregate fields')
-  //   data.agg = 'raw'
-  // }
-
-  // Why did I think we needed this??? - pmuellr
-  // If no end time, and aggregated time values => nope.
-  // if (data.end == null && data.interval && data.interval !== 'raw') {
-  //   data.errors.push('continous queries cannot aggregate over time')
-  //   data.interval = 'raw'
-  // }
-
-  // If interval is specified, and agg is not set, use mean.
-  if (data.interval && data.interval !== 'raw' && !data.agg) {
-    data.agg = 'mean'
-  }
-
-  // If interval is not 'raw', agg must not be 'raw'.
-  if (data.interval && data.interval !== 'raw' && data.agg && data.agg === 'raw') {
-    data.errors.push('when interval is specifed, agg must not be raw')
-    data.interval = 'raw'
-  }
-
   // Report on for query parms not used.
   for (let prop in query) {
     data.warnings.push(`unknown query string param "${prop}"`)
@@ -111,103 +77,9 @@ function removeEmptyParams (query) {
   return pruned
 }
 
-function parseAgentScope (query, data) {
-  parseValueSingle(query, data, 'id')
-  parseValueSingle(query, data, 'app')
-  parseValueMulti(query, data, 'tag', 'tags')
-  parseValueSingle(query, data, 'hostname')
-
-  if (data.id) {
-    if (data.app) {
-      data.warnings.push('id already specified, app ignored')
-      delete data.app
-    }
-
-    if (data.tags) {
-      data.warnings.push('id already specified, tags ignored')
-      delete data.tags
-    }
-
-    if (data.hostname) {
-      data.warnings.push('id already specified, hostname ignored')
-      delete data.hostname
-    }
-  }
-}
-
-function parseDuration (query, data) {
-  parseValueSingle(query, data, 'duration')
-  if (data.duration == null) data.duration = DefaultDurationSeconds
-
-  const value = parseInt(`${data.duration}`, 10)
-  if (isNaN(value)) {
-    data.errors.push(`invalid duration format "${data.duration}"`)
-    delete data.duration
-    return
-  }
-
-  data.duration = value
-}
-
-function parseNameData (query, data) {
-  parseValueSingle(query, data, 'name')
-  parseValueSingle(query, data, 'data')
-
-  if (data.name == null && data.data != null) {
-    data.errors.push('must specify name if specifying data')
-    delete data.data
-    return
-  }
-}
-
-function parseFields (query, data) {
-  parseValueMulti(query, data, 'field', 'fields')
-}
-
-function parseInterval (query, data) {
-  parseValueSingle(query, data, 'interval')
-
-  if (data.interval == null) data.interval = '1s'
-
-  if (data.interval) {
-    const value = subParseDuration(data.interval)
-    if (value != null) {
-      data.interval = value
-      return
-    } else {
-      data.errors.push(`invalid interval value ${data.interval}`)
-      delete data.interval
-      return
-    }
-  }
-}
-
-function parseStartEnd (query, data) {
-  parseValueSingle(query, data, 'start')
-  parseValueSingle(query, data, 'end')
-
-  if (data.start == null && data.end != null) {
-    delete data.end
-    data.errors.push('start must be specified if end is specified')
-    return
-  }
-
-  if (data.start) data.start = subParseDate(data.start)
-  if (data.end) data.end = subParseDate(data.end)
-}
-
-const Aggs = 'raw min max mean median'.split(' ')
-function parseAgg (query, data) {
-  parseValueSingle(query, data, 'agg')
-  if (data.agg == null) data.agg = 'mean'
-
-  if (Aggs.indexOf(data.agg) === -1) {
-    data.errors.push(`invalid agg value ${data.agg}`)
-    delete data.agg
-  }
-}
-
 function subParseDate (string) {
+  if (!string) return null
+
   let match = string.match(/^\d{4}-.*/)
   const isISO = match != null
 
@@ -237,6 +109,7 @@ function subParseDate (string) {
 
   return null
 }
+exports.subParseDate = subParseDate
 
 // Regular expression for duration expressions.
 const DurationRegex = /(-)?(\d+)(ms|s|m|h|d|w)?/
@@ -267,6 +140,7 @@ function subParseDuration (string) {
     default: return val * 1000
   }
 }
+exports.subParseDuration = subParseDuration
 
 // Parse a field, should only be one value.
 function parseValueSingle (query, data, prop) {
@@ -283,6 +157,7 @@ function parseValueSingle (query, data, prop) {
 
   data[prop] = val
 }
+exports.parseValueSingle = parseValueSingle
 
 // Parse a field, can be a single value or array.
 function parseValueMulti (query, data, propIn, propOut) {
@@ -298,3 +173,4 @@ function parseValueMulti (query, data, propIn, propOut) {
 
   data[propOut] = [val]
 }
+exports.parseValueMulti = parseValueMulti

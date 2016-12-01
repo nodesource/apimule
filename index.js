@@ -23,7 +23,7 @@ const runningQueries = new Set()
 // Launch an HTTP(S) server.
 // Params:
 // version
-function launch (context, schema, modulePath, logger, cb) {
+function launch (context, schema, filepath, logger, cb) {
   cb = util.onlyCallOnce(cb)
 
   Logger = logger
@@ -36,6 +36,11 @@ function launch (context, schema, modulePath, logger, cb) {
   } catch (err) {
     const msg = `error parsing server address ${config.web.server}: ${err}`
     return util.cbNextTick(cb, new Error(msg))
+  }
+
+  const types = lodash.get(schema, 'params.types')
+  if (types) {
+    Object.keys(types).forEach(key => qsp.register({ key: key }))
   }
 
   const addrParts = util.parseAddress(addrString)
@@ -63,7 +68,7 @@ function launch (context, schema, modulePath, logger, cb) {
   // iterate through the http schema to get method/uri's to register
   for (let method of ['GET', 'PUT', 'POST']) {
     for (let uri in schema[method]) {
-      const mod = loadUriModule(modulePath, method, uri)
+      const mod = loadUriModule(filepath, method, uri)
       if (mod == null) continue
 
       const expressMethod = method.toLowerCase()
@@ -233,8 +238,8 @@ function handleAPIRequest (context, schema, mod, method, uri, req, res) {
 }
 
 // Load a module that handles a particular HTTP method and uri
-function loadUriModule (path, method, uri) {
-  const moduleName = `${path}/${method}-${uri}`
+function loadUriModule (filepath, method, uri) {
+  const moduleName = `${filepath}/${method}-${uri}`
   try {
     return require(moduleName)
   } catch (err) {
