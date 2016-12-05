@@ -66,7 +66,7 @@ function launch (context, schema, filepath, logger, cb) {
   }, LOG_INTERVAL).unref()
 
   // iterate through the http schema to get method/uri's to register
-  for (let method of ['GET', 'PUT', 'POST']) {
+  for (let method of ['GET', 'PUT', 'POST', 'DELETE']) {
     for (let uri in schema[method]) {
       const mod = loadUriModule(filepath, method, uri)
       if (mod == null) continue
