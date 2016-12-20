@@ -60,11 +60,6 @@ function launch (context, schema, filepath, logger, cb) {
   // create a body parser for text that will take ANY content-type, or none
   const bodyCollector = bodyParser.text({type: () => true})
 
-  // periodically log the number of running HTTP requests
-  setInterval(() => {
-    Logger.info(`Handling ${runningQueries.size} connected queries.`)
-  }, LOG_INTERVAL).unref()
-
   // iterate through the http schema to get method/uri's to register
   for (let method of ['GET', 'PUT', 'POST', 'DELETE']) {
     for (let uri in schema[method]) {
